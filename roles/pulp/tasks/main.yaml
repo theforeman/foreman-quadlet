@@ -3,6 +3,21 @@
     name: "{{ pulp_image }}"
     state: present
 
+- name: Pull the Pulp API container image
+  containers.podman.podman_image:
+    name: "{{ pulp_api_image }}"
+    state: present
+
+- name: Pull the Pulp Content container image
+  containers.podman.podman_image:
+    name: "{{ pulp_content_image }}"
+    state: present
+
+- name: Pull the Pulp Worker container image
+  containers.podman.podman_image:
+    name: "{{ pulp_worker_image }}"
+    state: present
+
 - name: Create Pulp storage
   ansible.builtin.file:
     path: "{{ item | split(':') | first }}"
@@ -24,6 +39,24 @@
     volumes: "{{ pulp_volumes }}"
     secrets:
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+  
+- name: Deploy Pulp API Container
+  containers.podman.podman_container:
+    name: "{{ pulp_api_container_name }}"
+    image: "{{ pulp_api_image }}"
+    state: quadlet
+    ports: "{{ pulp_api_ports }}"
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
@@ -40,6 +73,72 @@
     host: "{{ ansible_hostname }}"
     port: 8080
     timeout: 300
+
+- name: Wait for Pulp API service to be accessible
+  wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 24817 
+    timeout: 600
+
+- name: Deploy Pulp Content Container
+  containers.podman.podman_container:
+    name: "{{ pulp_content_container_name }}"
+    image: "{{ pulp_content_image }}"
+    state: quadlet
+    ports: "{{ pulp_content_ports }}"
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+    quadlet_options:
+      - |
+        [Unit]
+        After=network.target pulp-api.service
+        Requires=pulp-api.service
+        [Install]
+        WantedBy=default.target
+
+- name: Deploy Pulp Worker Container
+  containers.podman.podman_container:
+    name: "{{ pulp_worker_container_name }}"
+    image: "{{ pulp_worker_image }}"
+    state: quadlet
+    volumes: "{{ pulp_volumes }}"
+    secrets:
+      - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+    quadlet_options:
+      - |
+        After=network.target pulp-api.service pulp-content.service
+        Requires=pulp-api.service pulp-content.service
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload to make Quadlet create the service files
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the Pulp API services
+  ansible.builtin.systemd:
+    name: pulp-api
+    enabled: true
+    state: started
+
+- name: Start the Pulp Content services
+  ansible.builtin.systemd:
+    name: pulp-content
+    enabled: true
+    state: started
+
+- name: Wait for Pulp Content service to be accessible
+  wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 24816
+    timeout: 600
+
+- name: Start the Pulp Worker service
+  ansible.builtin.systemd:
+    name: pulp-worker
+    enabled: true
+    state: started
 
 # Only needed until we have cert auth configured
 - name: Set Pulp admin password
