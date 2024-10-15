@@ -3,6 +3,16 @@
     name: "{{ pulp_image }}"
     state: present
 
+- name: Pull the Pulp API container image
+  containers.podman.podman_image:
+    name: "{{ pulp_api_image }}"
+    state: present
+
+- name: Pull the Pulp Content container image
+  containers.podman.podman_image:
+    name: "{{ pulp_content_image }}"
+    state: present
+
 - name: Create Pulp storage
   ansible.builtin.file:
     path: "{{ item | split(':') | first }}"
@@ -24,6 +34,22 @@
     volumes: "{{ pulp_volumes }}"
     secrets:
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
+  
+- name: Deploy Pulp API Container
+  containers.podman.podman_container:
+    name: "{{ pulp_api_container_name }}"
+    image: "{{ pulp_api_image }}"
+    state: quadlet
+    ports: "{{ pulp_api_ports }}"
+    volumes: "{{ pulp_volumes }}"
+
+- name: Deploy Pulp Content Container
+  containers.podman.podman_container:
+    name: "{{ pulp_content_container_name }}"
+    image: "{{ pulp_content_image }}"
+    state: quadlet
+    ports: "{{ pulp_content_ports }}"
+    volumes: "{{ pulp_volumes }}"
 
 - name: Run daemon reload to make Quadlet create the service files
   ansible.builtin.systemd:
@@ -39,6 +65,18 @@
   wait_for:
     host: "{{ ansible_hostname }}"
     port: 8080
+    timeout: 300
+
+- name: Wait for Pulp API service to be accessible
+  wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 24817 
+    timeout: 300
+
+- name: Wait for Pulp Content service to be accessible
+  wait_for:
+    host: "{{ ansible_hostname }}"
+    port: 24816 
     timeout: 300
 
 # Only needed until we have cert auth configured
