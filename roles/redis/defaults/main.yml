@@ -1,0 +1,1 @@
+redis_image: registry.access.redhat.com/rhel9/redis-7:latest
