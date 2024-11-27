@@ -1,14 +1,28 @@
 ---
-- name: Install redis
-  ansible.builtin.package:
-    name: "redis"
+- name: Pull Redis container image
+  containers.podman.podman_image:
+    name: "{{ redis_image }}"
     state: present
 
-- name: Start the Redis Service
-  ansible.builtin.systemd:
+- name: Create directory for Redis data
+  ansible.builtin.file:
+    path: /var/lib/redis
+    state: directory
+    owner: 1001
+    group: 1001
+    mode: '0755'
+
+- name: Run Redis as a container
+  containers.podman.podman_container:
     name: redis
-    enabled: true
+    image: "{{ redis_image }}"
     state: started
+    volumes:
+      - /var/lib/redis:/data:Z
+      - /var/lib/redis/redis.conf:/usr/local/etc/redis/redis.conf:Z
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
 
 - name: Wait for Redis service to be accessible
   ansible.builtin.wait_for:
