@@ -4,15 +4,18 @@
     name: "{{ httpd_container_image }}"
     state: present
 
-- name: Create cert directories
+- name: Create required directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
+    owner: root
+    group: root
     mode: "0750"
   loop:
     - "{{ httpd_ssl_dir }}/certs"
     - "{{ httpd_ssl_dir }}/private"
     - "{{ httpd_conf_dir }}"
+    - "/var/log/httpd"
 
 - name: Deploy certificates
   ansible.builtin.copy:
