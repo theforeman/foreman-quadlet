@@ -1,0 +1,44 @@
+---
+- name: Pull PostgreSQL container image
+  containers.podman.podman_image:
+    name: "{{ postgresql_image }}"
+    state: present
+
+- name: Create PostgreSQL storage directory
+  ansible.builtin.file:
+    path: "{{ item.split(':')[0] }}"
+    state: directory
+    mode: "0755"
+    owner: postgres
+    group: postgres
+  loop: "{{ postgresql_volumes }}"
+
+- name: Deploy PostgreSQL container using Quadlet
+  containers.podman.podman_container:
+    name: "{{ postgresql_container_name }}"
+    image: "{{ postgresql_image }}"
+    state: quadlet
+    env:
+      POSTGRES_USER: "{{ postgresql_user }}"
+      POSTGRES_PASSWORD: "{{ postgresql_password }}"
+      POSTGRES_DB: "{{ postgresql_db }}"
+    network: host
+    volumes: "{{ postgresql_volumes }}"
+    ports:
+      - "{{ postgresql_port }}:5432"
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+        [Service]
+        Restart=always
+        RestartSec=3
+        StartLimitIntervalSec=60
+
+- name: Wait for PostgreSQL container to be ready
+  ansible.builtin.wait_for:
+    host: "localhost"
+    port: "{{ postgresql_port }}"
+    timeout: 300
+    state: started
+    delay: 10
