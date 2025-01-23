@@ -34,4 +34,3 @@
         description: pulpcore nightly
         baseurl: https://yum.theforeman.org/pulpcore/nightly/el9/x86_64/
         gpgcheck: false
-

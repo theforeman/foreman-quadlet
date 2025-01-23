@@ -1,0 +1,9 @@
+---
+postgresql_image: docker.io/library/postgres:16
+postgresql_container_name: postgresql
+postgresql_user: postgres
+postgresql_password: "CHANGEME"
+postgresql_db: foreman
+postgresql_volumes:
+  - /var/lib/pgsql/data:/var/lib/postgresql/data
+postgresql_port: 5432
