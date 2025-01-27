@@ -51,9 +51,9 @@
       - { type: host, database: all, user: postgres, address: '0.0.0.0/0', auth_method: reject }
       - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
       - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
-
   roles:
     - certificates
+    - geerlingguy.postgresql
     - postgresql
     - redis
     - candlepin
