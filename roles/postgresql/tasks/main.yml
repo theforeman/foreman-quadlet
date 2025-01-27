@@ -9,8 +9,8 @@
     path: "{{ item.split(':')[0] }}"
     state: directory
     mode: "0755"
-    owner: postgres
-    group: postgres
+    owner: root
+    group: root
   loop: "{{ postgresql_volumes }}"
 
 - name: Deploy PostgreSQL container using Quadlet
@@ -19,9 +19,9 @@
     image: "{{ postgresql_image }}"
     state: quadlet
     env:
-      POSTGRES_USER: "{{ postgresql_user }}"
-      POSTGRES_PASSWORD: "{{ postgresql_password }}"
-      POSTGRES_DB: "{{ postgresql_db }}"
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: CHANGEME
+      POSTGRES_DB: foreman
     network: host
     volumes: "{{ postgresql_volumes }}"
     ports:
