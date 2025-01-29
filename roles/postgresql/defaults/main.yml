@@ -1,6 +1,16 @@
 ---
-postgresql_image: docker.io/library/postgres:16
+postgresql_image: quay.io/sclorg/postgresql-13-c9s
 postgresql_container_name: postgresql
+postgresql_network: host
+postgresql_restart_policy: always
+
+postgresql_data_dir: /var/lib/pgsql/data
 postgresql_volumes:
-  - /var/lib/pgsql/data:/var/lib/postgresql/data
+  - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+  - "./postgresql-init:/opt/app-root/src/postgresql-init:Z"
+
+postgresql_admin_password: "CHANGEME"
 postgresql_port: 5432
+
+postgresql_databases: []
+postgresql_users: []

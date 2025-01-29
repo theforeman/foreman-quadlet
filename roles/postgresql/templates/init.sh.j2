@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+
+{% for db in postgresql_databases %}
+psql -v ON_ERROR_STOP=1 --username "$POSTGRESQL_USER" <<-EOSQL
+    CREATE DATABASE {{ db.name }};
+    ALTER DATABASE {{ db.name }} OWNER TO {{ db.owner }};
+EOSQL
+{% endfor %}
+
+{% for user in postgresql_users %}
+psql -v ON_ERROR_STOP=1 --username "$POSTGRESQL_USER" <<-EOSQL
+    CREATE USER {{ user.name }} WITH PASSWORD '{{ user.password }}';
+    GRANT ALL PRIVILEGES ON DATABASE {{ user.databases | first }} TO {{ user.name }};
+EOSQL
+{% endfor %}

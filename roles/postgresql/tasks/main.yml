@@ -1,44 +1,64 @@
 ---
+- name: Create PostgreSQL storage directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+    owner: 26
+    group: 26
+  loop:
+    - "{{ postgresql_data_dir }}"
+    - ./postgresql-init
+
 - name: Pull PostgreSQL container image
   containers.podman.podman_image:
     name: "{{ postgresql_image }}"
     state: present
 
-- name: Create PostgreSQL storage directory
-  ansible.builtin.file:
-    path: "{{ item.split(':')[0] }}"
-    state: directory
-    mode: "0755"
-    owner: root
-    group: root
-  loop: "{{ postgresql_volumes }}"
+- name: Configure host based authentication
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "/var/lib/pgsql/data/pg_hba.conf"
+    mode: "0644"
 
-- name: Deploy PostgreSQL container using Quadlet
+- name: Initialize databases and users
+  ansible.builtin.template:
+    src: init.sh.j2
+    dest: "./postgresql-init/01-app-init.sh"
+    mode: "0755"
+
+- name: Deploy PostgreSQL container
   containers.podman.podman_container:
     name: "{{ postgresql_container_name }}"
     image: "{{ postgresql_image }}"
     state: quadlet
     env:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: CHANGEME
-      POSTGRES_DB: foreman
-    network: host
+      POSTGRESQL_ADMIN_PASSWORD: "{{ postgresql_admin_password }}"
     volumes: "{{ postgresql_volumes }}"
+    network: "{{ postgresql_network }}"
     ports:
       - "{{ postgresql_port }}:5432"
+    security_opt:
+      - "label=disable"
     quadlet_options:
       - |
         [Install]
         WantedBy=default.target
         [Service]
-        Restart=always
+        Restart={{ postgresql_restart_policy }}
         RestartSec=3
-        StartLimitIntervalSec=60
+        Environment=POSTGRESQL_USER=postgres
+        Environment=POSTGRESQL_PASSWORD={{ postgresql_admin_password }}
+        TimeoutStartSec=300
 
-- name: Wait for PostgreSQL container to be ready
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Wait for PostgreSQL to be ready
   ansible.builtin.wait_for:
-    host: "localhost"
+    host: localhost
     port: "{{ postgresql_port }}"
     timeout: 300
-    state: started
-    delay: 10
+
+# TODO: add task to verify database and user creation
