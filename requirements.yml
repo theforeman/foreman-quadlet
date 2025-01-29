@@ -8,6 +8,3 @@ collections:
   - name: theforeman.foreman
   - name: https://github.com/theforeman/forklift
     type: git
-
-roles:
-  - name: geerlingguy.postgresql
