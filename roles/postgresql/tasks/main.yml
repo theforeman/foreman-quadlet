@@ -1,19 +1,11 @@
 ---
 - name: Create PostgreSQL storage directory
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: "{{ postgresql_data_dir }}"
     state: directory
     mode: "0755"
     owner: 26
     group: 26
-  loop:
-    - "{{ postgresql_data_dir }}"
-    - ./postgresql-init
-
-- name: Pull PostgreSQL container image
-  containers.podman.podman_image:
-    name: "{{ postgresql_image }}"
-    state: present
 
 - name: Configure host based authentication
   ansible.builtin.template:
@@ -21,44 +13,32 @@
     dest: "/var/lib/pgsql/data/pg_hba.conf"
     mode: "0644"
 
+- name: Ensure postgresql-init directory exists
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/postgresql-init"
+    state: directory
+    mode: "0755"
+
 - name: Initialize databases and users
   ansible.builtin.template:
     src: init.sh.j2
-    dest: "./postgresql-init/01-app-init.sh"
+    dest: "{{ playbook_dir }}/postgresql-init/01-app-init.sh"
     mode: "0755"
 
-- name: Deploy PostgreSQL container
-  containers.podman.podman_container:
-    name: "{{ postgresql_container_name }}"
-    image: "{{ postgresql_image }}"
-    state: quadlet
-    env:
-      POSTGRESQL_ADMIN_PASSWORD: "{{ postgresql_admin_password }}"
-    volumes: "{{ postgresql_volumes }}"
-    network: "{{ postgresql_network }}"
-    ports:
-      - "{{ postgresql_port }}:5432"
-    security_opt:
-      - "label=disable"
-    quadlet_options:
-      - |
-        [Install]
-        WantedBy=default.target
-        [Service]
-        Restart={{ postgresql_restart_policy }}
-        RestartSec=3
-        Environment=POSTGRESQL_USER=postgres
-        Environment=POSTGRESQL_PASSWORD={{ postgresql_admin_password }}
-        TimeoutStartSec=300
+- name: Deploy Quadlet configuration
+  ansible.builtin.template:
+    src: postgresql.container.j2
+    dest: /etc/containers/systemd/{{ postgresql_container_name }}.container
+    mode: "0644"
 
 - name: Reload systemd daemon
   ansible.builtin.systemd:
     daemon_reload: true
 
-- name: Wait for PostgreSQL to be ready
-  ansible.builtin.wait_for:
-    host: localhost
-    port: "{{ postgresql_port }}"
-    timeout: 300
+- name: Start PostgreSQL container
+  ansible.builtin.systemd:
+    name: "{{ postgresql_container_name }}.service"
+    state: started
+    enabled: true
 
 # TODO: add task to verify database and user creation
