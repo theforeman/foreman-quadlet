@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+
 {% for db in postgresql_databases %}
 psql -v ON_ERROR_STOP=1 --username "$POSTGRESQL_USER" <<-EOSQL
     CREATE DATABASE {{ db.name }};
