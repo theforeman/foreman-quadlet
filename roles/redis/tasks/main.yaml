@@ -16,11 +16,24 @@
   containers.podman.podman_container:
     name: redis
     image: "{{ redis_image }}"
-    state: started
+    state: quadlet
     volumes:
       - /var/lib/redis:/data:Z
     ports:
       - "6379:6379"
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the Quadlet Demo Service
+  ansible.builtin.systemd:
+    name: redis
+    state: restarted
 
 - name: Wait for Redis service to be accessible
   ansible.builtin.wait_for:
