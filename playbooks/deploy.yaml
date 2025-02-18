@@ -49,13 +49,10 @@
     postgresql_users:
       - name: candlepin
         password: "{{ candlepin_db_password }}"
-        databases: [candlepin]
       - name: foreman
         password: "{{ foreman_db_password }}"
-        databases: [foreman]
       - name: pulp
         password: "{{ pulp_db_password }}"
-        databases: [pulp]
     postgresql_hba_entries:
       - { type: local, database: all, user: postgres, auth_method: ident }
       - { type: local, database: all, user: all, auth_method: ident }
