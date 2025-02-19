@@ -3,7 +3,7 @@
   ansible.builtin.file:
     path: "{{ postgresql_data_dir }}"
     state: directory
-    mode: "0755"
+    mode: "0700"
     owner: 26
     group: 26
 
@@ -17,13 +17,31 @@
   ansible.builtin.file:
     path: "{{ playbook_dir }}/postgresql-init"
     state: directory
-    mode: "0755"
+    mode: "0700"
 
 - name: Initialize databases and users
   ansible.builtin.template:
     src: init.sh.j2
     dest: "{{ playbook_dir }}/postgresql-init/01-app-init.sh"
-    mode: "0755"
+    mode: "0700"
+
+- name: Ensure secrets directory exists
+  ansible.builtin.file:
+    path: /etc/secrets
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: Create PostgreSQL admin password secret file
+  ansible.builtin.copy:
+    dest: /etc/secrets/postgresql_admin_password
+    content: |
+      POSTGRESQL_ADMIN_PASSWORD={{ postgresql_admin_password }}
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
 
 - name: Deploy Quadlet configuration
   ansible.builtin.template:

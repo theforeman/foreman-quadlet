@@ -4,7 +4,7 @@ Image={{ postgresql_image }}
 Network=host
 Volume={{ postgresql_data_dir }}:/var/lib/pgsql/data:Z
 Volume={{ playbook_dir }}/postgresql-init:/opt/app-root/src/postgresql-init:Z
-Environment=POSTGRESQL_ADMIN_PASSWORD={{ postgresql_admin_password }}
+EnvironmentFile=/etc/secrets/postgresql_admin_password
 PodmanArgs=--security-opt label=disable
 
 [Install]
