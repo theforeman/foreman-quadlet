@@ -1,7 +1,7 @@
 ---
 - name: Setup quadlet demo machine
   hosts:
-    - quadlet
+    - localhost
   become: true
   vars:
     certificates_hostnames:
