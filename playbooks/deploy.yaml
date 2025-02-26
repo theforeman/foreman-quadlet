@@ -21,6 +21,8 @@
     foreman_client_key: "/root/ssl-build/{{ ansible_fqdn }}/{{ ansible_fqdn }}-foreman-client.key"
     foreman_client_certificate: "/root/ssl-build/{{ ansible_fqdn }}/{{ ansible_fqdn }}-foreman-client.crt"
     foreman_db_password: "CHANGEME"
+    foreman_oauth_consumer_key: abcdefghijklmnopqrstuvwxyz123456
+    foreman_oauth_consumer_secret: abcdefghijklmnopqrstuvwxyz123456
     httpd_server_ca_certificate: "/root/ssl-build/katello-server-ca.crt"
     httpd_client_ca_certificate: "/root/ssl-build/katello-default-ca.crt"
     httpd_server_certificate: "/root/ssl-build/{{ ansible_fqdn }}/{{ ansible_fqdn }}-apache.crt"
