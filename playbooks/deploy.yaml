@@ -17,11 +17,6 @@
     candlepin_tomcat_certificate: "{{ certificates_ca_directory }}/certs/localhost.crt"
     candlepin_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
     candlepin_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
-    foreman_proxy_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
-    foreman_proxy_server_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
-    foreman_proxy_server_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}.crt"
-    foreman_proxy_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
-    foreman_proxy_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
     foreman_ca_certificate: "{{ certificates_ca_directory }}/certs/ca.crt"
     foreman_client_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}-client.key"
     foreman_client_certificate: "{{ certificates_ca_directory }}/certs/{{ certificates_server }}-client.crt"
@@ -34,6 +29,7 @@
     httpd_server_key: "{{ certificates_ca_directory }}/private/{{ certificates_server }}.key"
     pulp_db_password: "CHANGEME"
     pulp_content_origin: "https://{{ ansible_fqdn }}"
+    pulp_pulp_url: "https://{{ ansible_fqdn }}"
     postgresql_databases:
       - name: candlepin
         owner: candlepin
@@ -62,5 +58,4 @@
     - candlepin
     - httpd
     - pulp
-    - foreman_proxy
     - foreman
