@@ -1,0 +1,62 @@
+---
+- name: Create PostgreSQL storage directory
+  ansible.builtin.file:
+    path: "{{ postgresql_data_dir }}"
+    state: directory
+    mode: "0700"
+    owner: 26
+    group: 26
+
+- name: Configure host based authentication
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "/var/lib/pgsql/data/pg_hba.conf"
+    mode: "0644"
+
+- name: Ensure postgresql-init directory exists
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/postgresql-init"
+    state: directory
+    mode: "0755"
+
+- name: Initialize databases and users
+  ansible.builtin.template:
+    src: init.sh.j2
+    dest: "{{ playbook_dir }}/postgresql-init/01-app-init.sh"
+    mode: "0755"
+
+- name: Ensure secrets directory exists
+  ansible.builtin.file:
+    path: /etc/secrets
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: Create PostgreSQL admin password secret file
+  ansible.builtin.copy:
+    dest: /etc/secrets/postgresql_admin_password
+    content: |
+      POSTGRESQL_ADMIN_PASSWORD={{ postgresql_admin_password }}
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+
+- name: Deploy Quadlet configuration
+  ansible.builtin.template:
+    src: postgresql.container.j2
+    dest: /etc/containers/systemd/{{ postgresql_container_name }}.container
+    mode: "0644"
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start PostgreSQL container
+  ansible.builtin.systemd:
+    name: "{{ postgresql_container_name }}.service"
+    state: started
+    enabled: true
+
+# TODO: add task to verify database and user creation
