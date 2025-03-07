@@ -142,23 +142,17 @@
       - 'pulp-settings-py,type=mount,target=/etc/pulp/settings.py'
       - 'pulp-symmetric-key,type=mount,target=/etc/pulp/certs/database_fields.symmetric.key'
 
-- name: Start the Pulp API services
+- name: Start services
   ansible.builtin.systemd:
-    name: pulp-api
+    name: "{{ item }}"
     enabled: true
     state: started
-
-- name: Start the Pulp Content services
-  ansible.builtin.systemd:
-    name: pulp-content
-    enabled: true
-    state: started
-
-- name: Start the Pulp Worker service
-  ansible.builtin.systemd:
-    name: pulp-worker
-    enabled: true
-    state: started
+  async: 3
+  poll: 0
+  loop:
+    - pulp-api
+    - pulp-content
+    - pulp-worker
 
 # Only needed until we have cert auth configured
 - name: Set Pulp admin password
