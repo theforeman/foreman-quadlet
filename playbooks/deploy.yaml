@@ -1,7 +1,7 @@
 ---
 - name: Setup quadlet demo machine
   hosts:
-    - quadlet
+    - localhost
   become: true
   vars_files:
     - "../vars/{{ certificate_source }}_certificates.yml"
@@ -22,11 +22,6 @@
     candlepin_tomcat_certificate: "{{ localhost_certificate }}"
     candlepin_client_key: "{{ client_key }}"
     candlepin_client_certificate: "{{ client_certificate }}"
-    foreman_proxy_ca_certificate: "{{ ca_certificate }}"
-    foreman_proxy_server_key: "{{ server_key }}"
-    foreman_proxy_server_certificate: "{{ server_certificate }}"
-    foreman_proxy_client_key: "{{ client_key }}"
-    foreman_proxy_client_certificate: "{{ client_certificate }}"
     foreman_ca_certificate: "{{ ca_certificate }}"
     foreman_client_key: "{{ client_key }}"
     foreman_client_certificate: "{{ client_certificate }}"
@@ -39,6 +34,7 @@
     httpd_server_key: "{{ server_key }}"
     pulp_db_password: "CHANGEME"
     pulp_content_origin: "https://{{ ansible_fqdn }}"
+    pulp_pulp_url: "https://{{ ansible_fqdn }}"
     postgresql_databases:
       - name: candlepin
         owner: candlepin
@@ -61,6 +57,8 @@
       - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: md5 }
       - { type: host, database: all, user: all, address: '::1/128', auth_method: md5 }
   roles:
+    - role: foreman_certs
+      when: "certificate_source == 'installer'"
     - role: certificates
       when: "certificate_source == 'default'"
     - role: certificate_checks
@@ -73,5 +71,13 @@
     - candlepin
     - httpd
     - pulp
-    - foreman_proxy
     - foreman
+    - role: theforeman.operations.installer
+      vars:
+        foreman_installer_scenario: katello
+        foreman_installer_package: foreman-installer-katello
+        foreman_installer_options:
+          - '--foreman-proxy-oauth-consumer-key {{ foreman_oauth_consumer_key }}'
+          - '--foreman-proxy-oauth-consumer-secret {{ foreman_oauth_consumer_secret }}'
+          - '--tuning development'
+      when: "certificate_source == 'installer'"
