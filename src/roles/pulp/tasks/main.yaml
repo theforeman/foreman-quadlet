@@ -136,23 +136,26 @@
       - 'pulp-db-password,type=env,target=PULP_DATABASES__default__PASSWORD'
     env: "{{ pulp_settings_database_env }}"
 
-- name: Start the Pulp API services
+- name: Start services
   ansible.builtin.systemd:
-    name: pulp-api
+    name: "{{ item }}"
+    no_block: true
     enabled: true
     state: started
+  loop:
+    - pulp-api
+    - pulp-content
+    - pulp-worker
 
-- name: Start the Pulp Content services
+- name: Ensure services
   ansible.builtin.systemd:
-    name: pulp-content
+    name: "{{ item }}"
     enabled: true
     state: started
-
-- name: Start the Pulp Worker service
-  ansible.builtin.systemd:
-    name: pulp-worker
-    enabled: true
-    state: started
+  loop:
+    - pulp-api
+    - pulp-content
+    - pulp-worker
 
 # Only needed until we have cert auth configured
 - name: Set Pulp admin password
