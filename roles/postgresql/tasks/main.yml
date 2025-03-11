@@ -1,4 +1,9 @@
 ---
+- name: Pull PostgreSQL container image
+  containers.podman.podman_image:
+    name: "{{ postgresql_image }}"
+    state: present
+
 - name: Create PostgreSQL storage directory
   ansible.builtin.file:
     path: "{{ postgresql_data_dir }}"
@@ -41,16 +46,26 @@
     volumes:
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
       - "/var/lib/postgresql-init:/opt/app-root/src/postgresql-init:Z"
-    env:
-      POSTGRESQL_ADMIN_PASSWORD: "{{ postgresql_admin_password }}"
+    secrets:
+      - postgresql_admin_password
     restart_policy: always
     quadlet_options:
       - |
         [Install]
         WantedBy=default.target
 
+- name: Run daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the PostgreSQL Service
+  ansible.builtin.systemd:
+    name: "{{ postgresql_container_name }}"
+    enabled: true
+    state: started
+
 - name: Wait for PostgreSQL to be ready
   ansible.builtin.wait_for:
     port: 5432
-    host: localhost
-    timeout: 60
+    host: "localhost"
+    timeout: 300
