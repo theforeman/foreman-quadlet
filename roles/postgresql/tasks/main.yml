@@ -37,6 +37,19 @@
     name: postgresql_admin_password
     data: "{{ postgresql_admin_password }}"
 
+- name: Run PostgreSQL initialization script
+  containers.podman.podman_container:
+    name: postgresql-init
+    image: "{{ postgresql_image }}"
+    state: started
+    network: host
+    volumes:
+      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+      - "/var/lib/postgresql-init:/opt/app-root/src/postgresql-init:Z"
+    env:
+      POSTGRESQL_ADMIN_PASSWORD: "{{ postgresql_admin_password }}"
+  register: postgresql_init_result
+
 - name: Deploy PostgreSQL container
   containers.podman.podman_container:
     name: "{{ postgresql_container_name }}"
@@ -45,10 +58,11 @@
     network: host
     volumes:
       - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
-      - "/var/lib/postgresql-init:/opt/app-root/src/postgresql-init:Z"
-    secrets:
-      - postgresql_admin_password
-    restart_policy: always
+    env:
+      POSTGRESQL_USER: "postgres"
+      POSTGRESQL_PASSWORD: "{{ postgresql_admin_password }}"
+      POSTGRESQL_DATABASE: "{{ postgresql_databases[0].name | default('foreman') }}"
+      POSTGRESQL_ADMIN_PASSWORD: "{{ postgresql_admin_password }}"
     quadlet_options:
       - |
         [Install]
@@ -63,9 +77,3 @@
     name: "{{ postgresql_container_name }}"
     enabled: true
     state: started
-
-- name: Wait for PostgreSQL to be ready
-  ansible.builtin.wait_for:
-    port: 5432
-    host: "localhost"
-    timeout: 300
