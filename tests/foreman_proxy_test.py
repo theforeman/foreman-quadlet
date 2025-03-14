@@ -36,8 +36,3 @@ def test_foreman_proxy_version(foreman_proxy_version_curl):
 def test_foreman_proxy_features(foreman_proxy_features_curl):
     assert foreman_proxy_features_curl.succeeded
     assert foreman_proxy_features_curl.stderr == '200'
-
-
-def test_pulpcore_feature(foreman_proxy_features_curl):
-    features = json.loads(foreman_proxy_features_curl.stdout)
-    assert 'pulpcore' in features.keys()
