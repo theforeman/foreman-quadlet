@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+psql -v ON_ERROR_STOP=1 --username "postgres" <<-EOSQL
+{% for user in postgresql_users %}
+    CREATE USER {{ user.name }} WITH PASSWORD '{{ user.password }}';
+{% endfor %}
+
+{% for db in postgresql_databases %}
+    CREATE DATABASE {{ db.name }} OWNER {{ db.owner }};
+{% endfor %}
+EOSQL

@@ -1,0 +1,79 @@
+---
+- name: Pull PostgreSQL container image
+  containers.podman.podman_image:
+    name: "{{ postgresql_image }}"
+    state: present
+
+- name: Create PostgreSQL storage directory
+  ansible.builtin.file:
+    path: "{{ postgresql_data_dir }}"
+    state: directory
+    mode: "0700"
+    owner: 26
+    group: 26
+
+- name: Configure host based authentication
+  ansible.builtin.template:
+    src: pg_hba.conf.j2
+    dest: "{{ postgresql_data_dir }}/pg_hba.conf"
+    mode: "0644"
+
+- name: Ensure postgresql-init directory exists
+  ansible.builtin.file:
+    path: /var/lib/postgresql-init
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Initialize databases and users
+  ansible.builtin.template:
+    src: init.sh.j2
+    dest: /var/lib/postgresql-init/01-app-init.sh
+    mode: "0755"
+
+- name: Create Podman secret for PostgreSQL admin password
+  containers.podman.podman_secret:
+    name: postgresql_admin_password
+    data: "{{ postgresql_admin_password }}"
+
+- name: Run PostgreSQL initialization script
+  containers.podman.podman_container:
+    name: postgresql-init
+    image: "{{ postgresql_image }}"
+    state: started
+    network: host
+    volumes:
+      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+      - "/var/lib/postgresql-init:/opt/app-root/src/postgresql-init:Z"
+    env:
+      POSTGRESQL_ADMIN_PASSWORD: "{{ postgresql_admin_password }}"
+  register: postgresql_init_result
+
+- name: Deploy PostgreSQL container
+  containers.podman.podman_container:
+    name: "{{ postgresql_container_name }}"
+    image: "{{ postgresql_image }}"
+    state: quadlet
+    network: host
+    volumes:
+      - "{{ postgresql_data_dir }}:/var/lib/pgsql/data:Z"
+    env:
+      POSTGRESQL_USER: "postgres"
+      POSTGRESQL_PASSWORD: "{{ postgresql_admin_password }}"
+      POSTGRESQL_DATABASE: "{{ postgresql_databases[0].name | default('foreman') }}"
+      POSTGRESQL_ADMIN_PASSWORD: "{{ postgresql_admin_password }}"
+    quadlet_options:
+      - |
+        [Install]
+        WantedBy=default.target
+
+- name: Run daemon reload
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start the PostgreSQL Service
+  ansible.builtin.systemd:
+    name: "{{ postgresql_container_name }}"
+    enabled: true
+    state: started

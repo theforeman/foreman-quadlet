@@ -69,7 +69,8 @@
         certificate_checks_certificate: "{{ server_certificate }}"
         certificate_checks_key: "{{ server_key }}"
         certificate_checks_ca: "{{ ca_certificate }}"
-    - geerlingguy.postgresql
+    - certificates
+    - postgresql
     - redis
     - candlepin
     - httpd
