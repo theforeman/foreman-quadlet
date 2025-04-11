@@ -39,6 +39,8 @@ packer/build.*
 .env
 .venv
 .python-version
+build/
+*.egg-info/
 
 # mkdocs
 /site

@@ -4,3 +4,5 @@ paramiko
 pytest-testinfra
 pytest-durations
 pyyaml
+obsah @ git+https://github.com/theforeman/obsah
+-e .

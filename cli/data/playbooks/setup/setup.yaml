@@ -1,7 +1,9 @@
 ---
 - name: Setup basic stuff
-  hosts: all
   become: true
+  hosts:
+    - quadlet
+    - client
   roles:
     - theforeman.forklift.etc_hosts
 
