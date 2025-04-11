@@ -1,11 +1,13 @@
 ---
-- name: Setup basic stuff
-  hosts: all
+- name: Set up basic stuff
   become: true
+  hosts:
+    - quadlet
+    - client
   roles:
     - theforeman.forklift.etc_hosts
 
-- name: Setup quadlet demo machine
+- name: Set up quadlet demo machine
   hosts:
     - quadlet
   become: true
@@ -14,7 +16,6 @@
       ansible.builtin.package:
         name:
           - podman
-          - python3-cryptography
           - python3-libsemanage
           - python3-requests
           - bash-completion
