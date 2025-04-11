@@ -1,7 +1,8 @@
 ---
 - name: Setup basic stuff
-  hosts: all
   become: true
+  hosts:
+    - all
   roles:
     - theforeman.forklift.etc_hosts
 

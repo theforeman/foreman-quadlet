@@ -61,12 +61,12 @@ jobs:
           vagrant up client
       - name: Run setup
         run: |
-          ansible-playbook playbooks/setup.yaml
+          ./rop setup
       - name: Run image pull
         run: |
-          ansible-playbook playbooks/images.yaml
+          ./rop pull-images
       - name: Run deployment
         run: |
-          ansible-playbook playbooks/deploy.yaml -e certificate_source=${{ matrix.certificate_source }}
+          ./rop deploy --certificate-source=${{ matrix.certificate_source }}
       - name: Run tests
         run: ./run_tests --certificate-source=${{ matrix.certificate_source }}
