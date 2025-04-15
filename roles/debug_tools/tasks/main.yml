@@ -1,0 +1,6 @@
+---
+- name: Install print-secret tool
+  ansible.builtin.copy:
+    src: print-secret
+    dest: /usr/bin/print-secret
+    mode: '0755'
