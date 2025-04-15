@@ -1,0 +1,37 @@
+---
+database_password: CHANGEME
+database_host: localhost
+database_port: 5432
+database_ssl: false
+database_ssl_mode: disable
+database_ssl_ca: None
+database_ssl_cert: None
+database_ssl_key: None
+
+candlepin_db_password: "{{ database_password }}"
+candlepin_db_host: "{{ database_host }}"
+candlepin_db_port: "{{ database_port }}"
+candlepin_db_ssl_mode: "{{ database_ssl_mode }}"
+candlepin_db_ssl_ca: "{{ database_ssl_ca }}"
+candlepin_db_ssl_cert: "{{ database_ssl_cert }}"
+candlepin_db_ssl_key: "{{ database_ssl_key }}"
+
+pulp_settings_db_env:
+  PULP_DATABASES__default__NAME: "pulp"
+  PULP_DATABASES__default__USER: "pulp"
+  PULP_DATABASES__default__PASSWORD: "{{ database_password }}"
+  PULP_DATABASES__default__HOST: "{{ database_host }}"
+  PULP_DATABASES__default__PORT: "{{ database_port }}"
+  PULP_DATABASES__default__OPTIONS__sslmode: "{{ database_ssl_mode }}"
+  PULP_DATABASES__default__OPTIONS__sslrootcert: "{{ database_ssl_ca }}"
+  PULP_DATABASES__default__OPTIONS__sslcert: "{{ database_ssl_cert }}"
+  PULP_DATABASES__default__OPTIONS__sslkey: "{{ database_ssl_key }}"
+
+foreman_database_name: foreman
+foreman_database_user: foreman
+foreman_database_host: "{{ database_host }}"
+foreman_database_port: "{{ database_port }}"
+foreman_database_sslmode: "{{ database_ssl_mode }}"
+foreman_database_sslrootcert: "{{ database_ssl_ca }}"
+foreman_database_sslcert: "{{ database_ssl_cert }}"
+foreman_database_sslkey: "{{ database_ssl_key }}"
