@@ -44,7 +44,7 @@ class ApplicationConfig(obsah.ApplicationConfig):
         """
         Return the inventory path
         """
-        return os.environ.get('OBSAH_INVENTORY', os.path.join(os.getcwd(), 'vagrant.py'))
+        return os.environ.get('OBSAH_INVENTORY', os.path.join(os.getcwd(), 'inventories'))
 
 
 def main(cliargs=['--help'], application_config=ApplicationConfig):  # pylint: disable=R0914
