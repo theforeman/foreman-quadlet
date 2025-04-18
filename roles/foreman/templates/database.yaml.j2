@@ -1,0 +1,21 @@
+---
+production:
+  adapter: postgresql
+  database: {{ foreman_database_name }}
+  username: {{ foreman_database_user }}
+  password: {{ foreman_database_password }}
+  host: {{ foreman_database_host }}
+  port: {{ foreman_database_port }}
+  pool: {{ foreman_database_pool_count }}
+{% if foreman_database_sslmode %}
+  sslmode: {{ foreman_database_sslmode }}
+{% endif %}
+{% if foreman_database_sslrootcert %}
+  sslrootcert: {{ foreman_database_sslrootcert }}
+{% endif %}
+{% if foreman_database_sslcert %}
+  sslcert: {{ foreman_database_sslcert }}
+{% endif %}
+{% if foreman_database_sslkey %}
+  sslkey: {{ foreman_database_sslkey }}
+{% endif %}

@@ -4,11 +4,11 @@
     name: "{{ foreman_container_image }}:{{ foreman_container_tag }}"
     state: present
 
-- name: Create secret for DATABASE_URL
+- name: Create secret for database.yaml
   containers.podman.podman_secret:
     state: present
-    name: foreman-database-url
-    data: "postgresql://foreman:{{ foreman_db_password }}@localhost/foreman"
+    name: foreman-database-yaml
+    data: "{{ lookup('ansible.builtin.template', 'database.yaml.j2') }}"
 
 - name: Create settings config secret
   containers.podman.podman_secret:
@@ -54,7 +54,7 @@
     network: host
     hostname: "{{ ansible_fqdn }}"
     secrets:
-      - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-database-yaml,type=mount,target=/etc/foreman/database.yml'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
       - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
@@ -76,7 +76,7 @@
     network: host
     hostname: "{{ ansible_fqdn }}"
     secrets:
-      - 'foreman-database-url,type=env,target=DATABASE_URL'
+      - 'foreman-database-yaml,type=mount,target=/etc/foreman/database.yml'
       - 'foreman-settings-yaml,type=mount,target=/etc/foreman/settings.yaml'
       - 'foreman-katello-yaml,type=mount,target=/etc/foreman/plugins/katello.yaml'
       - 'foreman-ca-cert,type=mount,target=/etc/foreman/katello-default-ca.crt'
