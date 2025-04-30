@@ -29,7 +29,8 @@ jobs:
       - name: Run ansible-lint
         uses: ansible/ansible-lint@main
         with:
-          requirements_file: requirements.yml
+          requirements_file: ../../requirements.yml
+          working_directory: cli/data
 
   tests:
     strategy:
@@ -51,23 +52,24 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends vagrant vagrant-libvirt libvirt-clients libvirt-daemon-system libvirt-daemon qemu-system-x86 qemu-utils dnsmasq
           sudo chmod 666 /var/run/libvirt/libvirt-sock
-      - name: Install Ansible
-        run: pip install --upgrade ansible-core
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Install collection dependencies
-        run: ansible-galaxy install -r requirements.yml
+      - name: Setup environment
+        run: |
+          ./setup-environment
+          source .venv/bin/activate
+          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
       - name: Start VMs
         run: |
           ./start-vms
       - name: Run setup
         run: |
-          ansible-playbook playbooks/setup.yaml
+          rop setup
       - name: Run image pull
         run: |
-          ansible-playbook playbooks/images.yaml
+          rop pull-images
       - name: Run deployment
         run: |
-          ansible-playbook playbooks/deploy.yaml -e certificate_source=${{ matrix.certificate_source }}
+          rop deploy --certificate-source=${{ matrix.certificate_source }}
       - name: Run tests
-        run: ./run_tests --certificate-source=${{ matrix.certificate_source }}
+        run: |
+          ./run_tests --certificate-source=${{ matrix.certificate_source }}
