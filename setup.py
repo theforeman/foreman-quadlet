@@ -49,7 +49,7 @@ setup(
     packages=find_namespace_packages(include=['cli']),
     include_package_data=True,
 
-    install_requires=['obsah >= 1.1.0', 'cryptography'],
+    install_requires=['obsah >= 1.1.0', 'cryptography', 'psycopg2'],
 
     extras_require={
         'argcomplete': ['argcomplete'],
