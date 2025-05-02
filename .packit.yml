@@ -1,0 +1,28 @@
+# See the documentation for more information:
+# https://packit.dev/docs/configuration/
+
+specfile_path: cli.spec
+
+files_to_sync:
+  - cli.spec
+
+actions:
+  create-archive:
+    - python3 setup.py sdist
+    - bash -c "ls -1t ./dist/cli-*.tar.gz | head -n 1"
+
+upstream_package_name: cli
+downstream_package_name: cli
+
+jobs:
+  - job: copr_build
+    trigger: pull_request
+    targets:
+      centos-stream-9:
+        additional_repos:
+          - copr://ekohl/obal
+
+  - job: tests
+    trigger: pull_request
+    targets:
+      - centos-stream-9
