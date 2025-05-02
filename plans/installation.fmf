@@ -1,0 +1,30 @@
+summary: Installation
+provision:
+  hardware:
+    memory: ">= 4 GB"
+prepare:
+  # Work around packit builds being installed unconditionally
+  - how: install
+    exclude:
+      - ".*"
+  - how: install
+    copr: ekohl/rop
+    package: []
+    # workaround TFT-3360
+    exclude: []
+  - how: shell
+    script: |
+      if [[ -n $PACKIT_COPR_PROJECT ]] ; then
+        for copr in $PACKIT_COPR_PROJECT ; do
+          sudo dnf copr enable -y $PACKIT_COPR_PROJECT
+        done
+      fi
+  - how: install
+    package: rop
+    # workaround TFT-3360
+    exclude: []
+execute:
+  how: tmt
+  script: |
+    rop pull-images
+    rop deploy
