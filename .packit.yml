@@ -21,3 +21,8 @@ jobs:
       centos-stream-9:
         additional_repos:
           - copr://ekohl/obal
+
+  - job: tests
+    trigger: pull_request
+    targets:
+      - centos-stream-9

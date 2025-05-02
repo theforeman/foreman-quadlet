@@ -1,0 +1,23 @@
+summary: Installation
+prepare:
+  # Work around packit builds being installed unconditionally
+  - how: install
+    exclude:
+      - ".*"
+  - how: install
+    copr: ekohl/obal
+    package: []
+  - how: shell
+    script: |
+      if [[ -n $PACKIT_COPR_PROJECT ]] ; then
+        for copr in $PACKIT_COPR_PROJECT ; do
+          sudo dnf copr enable -y $PACKIT_COPR_PROJECT
+        done
+      fi
+  - how: install
+    package: python3-cli
+execute:
+  how: tmt
+  script: |
+    rop pull-images
+    rop deploy
