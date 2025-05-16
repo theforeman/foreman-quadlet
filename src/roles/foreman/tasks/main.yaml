@@ -141,7 +141,7 @@
   until:
     - foreman_tasks_status.status == 200
     - foreman_tasks_status.json['results']['katello']['services']['foreman_tasks']['status'] == 'ok'
-  retries: 60
+  retries: 30
   delay: 5
   register: foreman_tasks_status
   when:
