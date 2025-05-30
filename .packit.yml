@@ -6,6 +6,16 @@ specfile_path: rop.spec
 upstream_package_name: rop
 downstream_package_name: rop
 
+srpm_build_deps:
+  - ansible-core
+
+actions:
+  create-archive:
+    - bash -c 'ANSIBLE_COLLECTIONS_PATH=./build/collections/rop ansible-galaxy install -r src/requirements.yml'
+    - git archive --prefix rop-0.0.1/ --output rop.tar HEAD
+    - tar --append --file rop.tar --transform='s#^#rop-0.0.1/#' build/collections/rop
+    - echo rop.tar
+
 jobs:
   - job: copr_build
     trigger: pull_request
