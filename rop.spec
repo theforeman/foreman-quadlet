@@ -40,6 +40,7 @@ INVENTORY
 sed -i '/^OBSAH_BASE=/ s|=.\+|=%{_datadir}/%{name}|' rop
 sed -i '/^OBSAH_INVENTORY=/ s|=.\+|=%{_sysconfdir}/%{name}/inventory|' rop
 sed -i '/^OBSAH_STATE=/ s|=.\+|=%{_sharedstatedir}/%{name}|' rop
+sed -i '/^ANSIBLE_COLLECTIONS_PATH=/ s|=.\+|=%{_datadir}/%{name}/collections|' rop
 
 %install
 install -d -m0755 %{buildroot}%{_sysconfdir}/%{name}
