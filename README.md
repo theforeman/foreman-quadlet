@@ -38,15 +38,12 @@ Ensure you have a deployment. Now run the tests:
 
 ## Release
 
-To create a release, bump `VERSION`, create a commit and tag.
+To create a release, it's sufficient to create a tag and push it.
 It must follow the x.y.z pattern without any prefix.
 
 ```
-VERSION=x.y.z
-echo $VERSION > VERSION
-git commit -m "Release $VERSION" VERSION
-git tag -s "$VERSION" -m "Release $VERSION"
-git push --follow-tags
+git tag -s x.y.z -m 'Release x.y.z'
+git push origin x.y.z
 ```
 
 This will create a GitHub release and attach the created tarball to it.
