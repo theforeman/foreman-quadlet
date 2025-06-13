@@ -64,6 +64,9 @@ jobs:
       - name: Start VMs
         run: |
           ./forge vms start
+      - name: Configure repositories
+        run: |
+          ./forge setup-repositories
       - name: Create installer certificates
         if: contains(matrix.certificate_source, 'installer')
         run: |
@@ -74,6 +77,9 @@ jobs:
       - name: Run deployment
         run: |
           ./foremanctl deploy --certificate-source=${{ matrix.certificate_source }}
+      - name: Setup hammer
+        run: |
+          ./foremanctl setup-hammer
       - name: Run tests
         run: |
           ./forge test --pytest-args="--certificate-source=${{ matrix.certificate_source }}"

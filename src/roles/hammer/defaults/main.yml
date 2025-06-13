@@ -1,0 +1,9 @@
+---
+hammer_foreman_server_url: "https://{{ ansible_fqdn }}"
+hammer_ca_certificate: "/etc/pki/tls/certs/ca-bundle.trust.crt"
+hammer_packages:
+  - rubygem-hammer_cli
+  - rubygem-hammer_cli_foreman
+  - rubygem-hammer_cli_foreman_tasks
+  - rubygem-hammer_cli_foreman_remote_execution
+  - rubygem-hammer_cli_katello
