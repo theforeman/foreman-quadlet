@@ -1,5 +1,5 @@
 NAME := foremanctl
-VERSION := $(shell cat VERSION)
+VERSION := $(shell git describe)
 
 dist: $(NAME)-$(VERSION).tar.gz
 
